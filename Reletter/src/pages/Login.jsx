@@ -91,17 +91,14 @@ const Login = () => {
         body: JSON.stringify(data),
       });
   
-      const text = await res.text(); // 응답을 먼저 text로 받기
-  
+      // 응답 본문이 비어있을 가능성에 대비한 예외 처리
       let result = null;
-      if (text) {
-        try {
-          result = JSON.parse(text); // JSON 파싱 시도
-        } catch (err) {
-          console.error("❌ JSON 파싱 실패:", text);
-          alert("서버 응답 오류 (JSON 아님)");
-          return;
-        }
+      try {
+        result = await res.json();
+      } catch (jsonError) {
+        console.error("⚠️ JSON 파싱 실패:", jsonError);
+        alert("서버 응답 오류: 토큰 없음");
+        return;
       }
   
       if (!res.ok) {
@@ -109,16 +106,12 @@ const Login = () => {
         return;
       }
   
-      if (!result?.token) {
-        alert("서버 응답 오류: 토큰 없음");
-        return;
-      }
-  
+      // 로그인 성공
       alert("로그인 성공!");
       localStorage.setItem("accessToken", result.token);
       navigate("/main");
     } catch (error) {
-      console.error("❌ 네트워크 오류:", error);
+      console.error("❌ 네트워크 또는 서버 에러:", error);
       alert("서버 오류로 로그인 실패");
     }
   };  
